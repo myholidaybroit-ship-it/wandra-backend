@@ -32,6 +32,23 @@ const agencySchema = new Schema({
   gstin: String,
   currency: { type: String, default: 'INR' },
   bank: { type: bankSchema, default: () => ({}) },
+  invoiceSettings: {
+    type: new Schema({
+      prefix: String,
+      defaultGst: Number,
+      defaultDue: Number,
+      type: String,
+      terms: String,
+      footer: String,
+    }, { _id: false }),
+    default: () => ({
+      defaultGst: 18,
+      defaultDue: 15,
+      type: 'Non-GST',
+      terms: 'Payable within 15 days. 50% advance to confirm booking.',
+      footer: 'Thank you for travelling with us.',
+    }),
+  },
 
   // ── lead capture config (agency-customisable) ──
   leadSources: {

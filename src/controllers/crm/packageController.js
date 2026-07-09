@@ -10,6 +10,11 @@ import { computePricing } from '../../services/pricing.js'
 import { uploadDeep } from '../../services/storage.js'
 
 const today = () => new Date().toISOString().slice(0, 10)
+const normalizeRefs = (body = {}) => {
+  if (body.clientId && !body.client) body.client = body.clientId
+  delete body.clientId
+  return body
+}
 
 /** GET /api/packages */
 export const list = asyncHandler(async (req, res) => {
@@ -33,13 +38,14 @@ export const getOne = asyncHandler(async (req, res) => {
 /** Internal: create a package + its auto-quotation. Returns the package doc. */
 async function createPackage(agencyId, data, createdBy) {
   const code = await packageCode(agencyId)
+  const body = normalizeRefs({ ...data })
   const pkg = await Package.create({
-    ...data,
+    ...body,
     agency: agencyId,
     code,
-    createdBy: createdBy || data.createdBy,
-    status: data.status || 'Draft',
-    paid: data.paid || 0,
+    createdBy: createdBy || body.createdBy,
+    status: body.status || 'Draft',
+    paid: body.paid || 0,
   })
   const pr = computePricing(pkg.toObject())
   await Quotation.create({
@@ -59,14 +65,14 @@ async function createPackage(agencyId, data, createdBy) {
 /** POST /api/packages */
 export const create = asyncHandler(async (req, res) => {
   // safety net: push any nested data-URL images (e.g. flight screenshot) to S3
-  const body = await uploadDeep(req.body, { folder: `agencies/${req.agencyId}/packages` })
+  const body = normalizeRefs(await uploadDeep(req.body, { folder: `agencies/${req.agencyId}/packages` }))
   const pkg = await createPackage(req.agencyId, body, req.agency.name)
   res.status(201).json({ ...pkg.toJSON(), computed: computePricing(pkg.toObject()) })
 })
 
 /** PATCH /api/packages/:id — keeps the linked quotation amount in sync. */
 export const update = asyncHandler(async (req, res) => {
-  const patch = await uploadDeep({ ...req.body }, { folder: `agencies/${req.agencyId}/packages` })
+  const patch = normalizeRefs(await uploadDeep({ ...req.body }, { folder: `agencies/${req.agencyId}/packages` }))
   delete patch.agency; delete patch.code; delete patch.id
   const pkg = await Package.findOneAndUpdate(
     { _id: req.params.id, agency: req.agencyId }, patch, { new: true, runValidators: true },

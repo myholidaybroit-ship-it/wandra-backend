@@ -5,6 +5,7 @@ const { Schema } = mongoose
 
 const activitySchema = new Schema({
   name: { type: String, required: true },
+  destination: String,
   category: String,
   durationMins: Number,
   cost: Number,

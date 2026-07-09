@@ -5,6 +5,7 @@ const { Schema } = mongoose
 
 const hotelSchema = new Schema({
   name: { type: String, required: true },
+  destination: String,
   city: String,
   phone: String,
   email: String,

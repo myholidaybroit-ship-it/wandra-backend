@@ -5,6 +5,7 @@ const { Schema } = mongoose
 
 const serviceLocationSchema = new Schema({
   name: { type: String, required: true },
+  destination: String,
   serviceType: String,
   durationMins: Number,
   cost: Number,

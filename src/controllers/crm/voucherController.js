@@ -22,7 +22,12 @@ export const getOne = asyncHandler(async (req, res) => {
 /** POST /api/vouchers */
 export const create = asyncHandler(async (req, res) => {
   const code = await voucherCode(req.agencyId)
-  const v = await Voucher.create({ ...req.body, agency: req.agencyId, code })
+  const body = { ...req.body }
+  if (body.packageId && !body.package) body.package = body.packageId
+  if (body.clientId && !body.client) body.client = body.clientId
+  delete body.packageId
+  delete body.clientId
+  const v = await Voucher.create({ ...body, agency: req.agencyId, code })
   res.status(201).json(v)
 })
 

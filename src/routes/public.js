@@ -10,5 +10,6 @@ router.get('/site/:slug', pub.site)
 router.post('/site/:slug/lead', pub.submitLead)
 router.get('/stories/:slug', pub.publicStories)
 router.post('/stories/:slug', pub.submitStory)
+router.post('/trial', pub.submitTrial)
 
 export default router
