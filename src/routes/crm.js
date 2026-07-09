@@ -26,6 +26,7 @@ const router = Router()
 
 // ── auth (public) ──
 router.post('/auth/login', auth.login)
+router.post('/auth/logout', auth.logout)
 
 // everything below requires an agency token
 router.use(agencyAuth)

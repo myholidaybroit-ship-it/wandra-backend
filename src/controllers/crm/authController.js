@@ -5,6 +5,13 @@ import User from '../../models/User.js'
 import Agency from '../../models/Agency.js'
 import Role from '../../models/Role.js'
 
+const sessionCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  path: '/api',
+}
+
 /** Shape the /me payload the CRM store bootstraps from. */
 async function sessionPayload(user, agency) {
   const role = await Role.findOne({ agency: agency._id, name: user.role })
@@ -33,7 +40,14 @@ export const login = asyncHandler(async (req, res) => {
   if (!(await user.checkPassword(password))) throw ApiError.unauthorized('Invalid credentials')
 
   const token = signToken({ realm: 'agency', sub: user.id, agency: agency.id, role: user.role })
+  res.cookie('token', token, { ...sessionCookieOptions, maxAge: 7 * 24 * 60 * 60 * 1000 })
   res.json({ token, ...(await sessionPayload(user, agency)) })
+})
+
+/** POST /api/auth/logout */
+export const logout = asyncHandler(async (req, res) => {
+  res.clearCookie('token', sessionCookieOptions)
+  res.json({ ok: true })
 })
 
 /** GET /api/auth/me */
