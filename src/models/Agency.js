@@ -33,6 +33,12 @@ const agencySchema = new Schema({
   currency: { type: String, default: 'INR' },
   bank: { type: bankSchema, default: () => ({}) },
 
+  // ── lead capture config (agency-customisable) ──
+  leadSources: {
+    type: [String],
+    default: () => ['Website', 'Landing Page', 'Ad Form', 'Referral', 'WhatsApp', 'Walk-in', 'B2B Agent', 'Instagram'],
+  },
+
   // ── Plan / entitlements (admin-controlled) ──
   plan: { type: String, enum: ['Free', 'Pro'], default: 'Free', index: true },
   status: { type: String, enum: ['active', 'suspended'], default: 'active', index: true },

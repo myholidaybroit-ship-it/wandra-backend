@@ -18,6 +18,13 @@ export const updateProfile = asyncHandler(async (req, res) => {
   const patch = { ...req.body }
   // tenants cannot change their own plan/entitlements/status from the CRM
   for (const k of ['plan', 'features', 'limits', 'status', 'password', 'code', 'billing', 'renewal', 'usage']) delete patch[k]
+  // lead sources: keep a clean, de-duped, non-empty list of trimmed labels
+  if (patch.leadSources !== undefined) {
+    const seen = new Set()
+    patch.leadSources = (Array.isArray(patch.leadSources) ? patch.leadSources : [])
+      .map((s) => String(s).trim())
+      .filter((s) => s && !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))
+  }
   // safety net: if a raw data-URL logo slips through, push it to S3
   if (patch.logo !== undefined) {
     patch.logo = await uploadIfDataUrl(patch.logo, { folder: `agencies/${req.agencyId}/logo` })
