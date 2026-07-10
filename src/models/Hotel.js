@@ -17,6 +17,7 @@ const hotelSchema = new Schema({
   roomTypes: String,
   description: String,
   image: String,
+  gallery: { type: [String], default: [] },
 })
 
 baseModel(hotelSchema)

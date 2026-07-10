@@ -11,6 +11,7 @@ const cabSchema = new Schema({
   ratePerKm: Number,
   ratePerDay: Number,
   image: String,
+  gallery: { type: [String], default: [] },
   contact: String,
   status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
 })

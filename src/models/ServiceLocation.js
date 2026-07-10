@@ -13,6 +13,7 @@ const serviceLocationSchema = new Schema({
   city: String,
   description: String,
   image: String,
+  gallery: { type: [String], default: [] },
 })
 
 baseModel(serviceLocationSchema)

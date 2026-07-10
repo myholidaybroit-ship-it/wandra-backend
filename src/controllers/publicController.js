@@ -61,10 +61,10 @@ export const itinerary = asyncHandler(async (req, res) => {
   const [agency, destinations, hotels, cabs, activities, serviceLocations] = await Promise.all([
     Agency.findById(pkg.agency),
     Destination.find({ agency: pkg.agency }).select('name location image gallery'),
-    Hotel.find({ agency: pkg.agency }).select('name destination city rating description image roomTypes buyingPrice extraBedAdult extraBedChild childNoBed'),
-    Cab.find({ agency: pkg.agency }).select('name type image contact ratePerDay ratePerKm'),
-    Activity.find({ agency: pkg.agency }).select('name destination category description image sell cost durationMins'),
-    ServiceLocation.find({ agency: pkg.agency }).select('name destination serviceType description image sell cost durationMins'),
+    Hotel.find({ agency: pkg.agency }).select('name destination city rating description image gallery roomTypes buyingPrice extraBedAdult extraBedChild childNoBed'),
+    Cab.find({ agency: pkg.agency }).select('name type image gallery contact ratePerDay ratePerKm'),
+    Activity.find({ agency: pkg.agency }).select('name destination category description image gallery sell cost durationMins'),
+    ServiceLocation.find({ agency: pkg.agency }).select('name destination serviceType description image gallery sell cost durationMins'),
   ])
   res.json({
     package: { ...pkg.toJSON(), computed: computePricing(pkg.toObject()) },

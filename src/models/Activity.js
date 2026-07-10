@@ -13,6 +13,7 @@ const activitySchema = new Schema({
   city: String,
   description: String,
   image: String,
+  gallery: { type: [String], default: [] },
 })
 
 baseModel(activitySchema)
