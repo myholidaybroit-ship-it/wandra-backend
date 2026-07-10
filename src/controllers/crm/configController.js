@@ -16,4 +16,4 @@ export const config = asyncHandler(async (req, res) => {
 })
 
 /** Tenant-scoped CRUD for reusable itinerary day-templates. */
-export const itineraryTemplates = crudFactory(ItineraryTemplate, { searchable: ['name', 'activity'] })
+export const itineraryTemplates = crudFactory(ItineraryTemplate, { searchable: ['name', 'activity', 'destination'] })
