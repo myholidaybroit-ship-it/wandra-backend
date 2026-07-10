@@ -154,8 +154,8 @@ export const FEATURE_GROUPS = [
     features: [
       { key: 'master.destinations', label: 'Destinations', desc: 'Manage destinations master', free: true, pro: true },
       { key: 'master.hotels', label: 'Hotels', desc: 'Manage hotels & bed pricing', free: true, pro: true },
-      { key: 'master.cabs', label: 'Cabs', desc: 'Manage cabs & rates', free: true, pro: true },
-      { key: 'master.service_locations', label: 'Service locations', desc: 'Routes & transfer master', free: false, pro: true },
+      { key: 'master.cabs', label: 'Cab Types', desc: 'Manage cab types & rates', free: true, pro: true },
+      { key: 'master.service_locations', label: 'Transport', desc: 'Transport routes master', free: false, pro: true },
       { key: 'master.activities', label: 'Activities', desc: 'Activities & tickets master', free: false, pro: true },
       { key: 'master.inclusions', label: 'Inclusion presets', desc: 'Reusable inclusion/exclusion lists', free: true, pro: true },
       { key: 'master.gallery_images', label: 'Master images', desc: 'Photos on destinations & hotels', free: false, pro: true },
@@ -264,7 +264,7 @@ export const LIMIT_DEFS = [
   { key: 'landing_pages', label: 'Landing pages', unit: 'pages', free: 0, pro: 5 },
   { key: 'destinations', label: 'Destinations', unit: 'records', free: 20, pro: -1 },
   { key: 'hotels', label: 'Hotels', unit: 'records', free: 50, pro: -1 },
-  { key: 'cabs', label: 'Cabs', unit: 'records', free: 20, pro: -1 },
+  { key: 'cabs', label: 'Cab Types', unit: 'records', free: 20, pro: -1 },
 ]
 
 /* Flat list of every feature key + lookup helpers */
