@@ -15,16 +15,18 @@ export const catalog = asyncHandler(async (req, res) => {
   res.json({ groups: FEATURE_GROUPS, limits: LIMIT_DEFS })
 })
 
-/** PATCH /api/admin/plans/:key  (managed pricing + copy + feature/limit maps) */
+/** PATCH /api/admin/plans/:key  (managed monthly pricing + copy + feature/limit maps) */
 export const update = asyncHandler(async (req, res) => {
   const plan = await Plan.findOne({ key: req.params.key })
   if (!plan) throw ApiError.notFound('Plan not found')
-  const { name, price, priceYear, oldPrice, period, tagline, plus, color, featured, limit } = req.body
+  const { name, price, tagline, plus, color, featured, limit } = req.body
   if (name != null) plan.name = name
-  if (price != null) plan.price = Number(price)
-  if (priceYear != null) plan.priceYear = priceYear === '' ? undefined : Number(priceYear)
-  if (oldPrice != null) plan.oldPrice = oldPrice === '' ? undefined : Number(oldPrice)
-  if (period != null) plan.period = period
+  if (plan.key === 'Free') plan.price = 0
+  else if (price != null) {
+    const monthlyPrice = Number(price)
+    if (!Number.isFinite(monthlyPrice) || monthlyPrice < 0) throw ApiError.badRequest('Monthly price must be a non-negative number')
+    plan.price = monthlyPrice
+  }
   if (tagline != null) plan.tagline = tagline
   if (plus != null) plan.plus = plus
   if (color != null) plan.color = color

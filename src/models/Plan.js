@@ -15,8 +15,6 @@ const planSchema = new Schema({
   // marketing fields shown on the CRM billing / upgrade pages
   perks: { type: [String], default: [] },
   plus: String,
-  priceYear: Number,
-  oldPrice: Number,
   limit: { type: Number, default: 0 },   // client limit for the marketing card (-1 = unlimited)
   // plain objects — feature keys contain dots, which Mongoose Maps disallow
   features: { type: Schema.Types.Mixed, default: {} },

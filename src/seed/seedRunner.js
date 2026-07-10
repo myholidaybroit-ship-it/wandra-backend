@@ -21,7 +21,7 @@ async function seedPlans() {
   for (const p of PLAN_CATALOG) {
     await Plan.findOneAndUpdate(
       { key: p.key },
-      { $set: p },
+      { $set: p, $unset: { priceYear: '', oldPrice: '' } },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     )
   }

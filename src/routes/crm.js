@@ -20,6 +20,7 @@ import * as stories from '../controllers/crm/storyController.js'
 import * as landing from '../controllers/crm/landingController.js'
 import * as dashboard from '../controllers/crm/dashboardController.js'
 import * as config from '../controllers/crm/configController.js'
+import * as support from '../controllers/crm/supportController.js'
 import { uploadAgency } from '../controllers/uploadController.js'
 
 const router = Router()
@@ -32,6 +33,10 @@ router.post('/auth/logout', auth.logout)
 router.use(agencyAuth)
 router.get('/auth/me', auth.me)
 router.post('/auth/password', auth.changePassword)
+
+// vendor-owned support contact and tenant-safe inquiry submission
+router.get('/support', support.getSettings)
+router.post('/support/inquiries', support.createInquiry)
 
 // agency profile + entitlements
 router.get('/agency', agency.getProfile)

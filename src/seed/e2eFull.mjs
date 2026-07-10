@@ -55,7 +55,7 @@ try {
   const cat = await req('GET', '/api/admin/feature-catalog', { token: aTok })
   ok(cat.json.groups.length > 10 && cat.json.limits.length > 0, `feature catalog (${cat.json.groups.length} groups)`)
   ok((await req('GET', '/api/admin/plans', { token: aTok })).json.items.length === 2, 'plans list (Free/Pro)')
-  ok((await req('PATCH', '/api/admin/plans/Pro', { token: aTok, body: { price: 4999, priceYear: 3499, oldPrice: 12999 } })).json.price === 4999, 'plan managed pricing update')
+  ok((await req('PATCH', '/api/admin/plans/Pro', { token: aTok, body: { price: 3999 } })).json.price === 3999, 'monthly plan pricing update')
   ok((await req('PATCH', '/api/admin/plans/Pro/features', { token: aTok, body: { key: 'reports.view', value: true } })).json.features['reports.view'] === true, 'plan feature toggle')
   ok((await req('PATCH', '/api/admin/plans/Free/limits', { token: aTok, body: { key: 'clients', value: 150 } })).json.limits.clients === 150, 'plan limit update')
   ok((await req('POST', '/api/admin/plans/Free/reset', { token: aTok })).json.limits.clients === 100, 'plan reset to catalog')
@@ -86,12 +86,12 @@ try {
   const cTok = crmLogin.json.token
 
   section('ADMIN · billing (activate Pro, renewals, downgrade)')
-  const pro = await req('POST', `/api/admin/agencies/${agId}/activate-pro`, { token: aTok, body: { method: 'UPI', originalPrice: 4999, amount: 4999, reference: 'R1' } })
+  const pro = await req('POST', `/api/admin/agencies/${agId}/activate-pro`, { token: aTok, body: { method: 'UPI', originalPrice: 3999, amount: 3999, reference: 'R1' } })
   ok(pro.status === 201 && pro.json.agency.plan === 'Pro' && pro.json.transaction.code === 'INV-0001', 'activate Pro → INV-0001')
   ok(pro.json.agency.features['reports.view'] === true, 'Pro features applied to agency')
   ok((await req('POST', `/api/admin/agencies/${agId}/renewal/request`, { token: aTok })).json.renewal.status === 'requested', 'renewal request')
   ok((await req('POST', '/api/agency/renewal/respond', { token: cTok, body: { answer: 'accepted' } })).json.renewal.status === 'accepted', 'agency responds to renewal (CRM)')
-  ok((await req('POST', `/api/admin/agencies/${agId}/renewal/record`, { token: aTok, body: { method: 'UPI', originalPrice: 4999, amount: 4999, reference: 'R2' } })).json.transaction.code === 'INV-0002', 'renewal recorded → INV-0002')
+  ok((await req('POST', `/api/admin/agencies/${agId}/renewal/record`, { token: aTok, body: { method: 'UPI', originalPrice: 3999, amount: 3999, reference: 'R2' } })).json.transaction.code === 'INV-0002', 'renewal recorded → INV-0002')
   ok((await req('GET', '/api/admin/transactions', { token: aTok })).json.total === 2, 'transactions ledger (2)')
   ok((await req('GET', `/api/admin/transactions/${pro.json.transaction.id}`, { token: aTok })).json.code === 'INV-0001', 'transaction detail')
 

@@ -16,6 +16,8 @@ import Activity from '../models/Activity.js'
 import ServiceLocation from '../models/ServiceLocation.js'
 import AssignmentConfig from '../models/AssignmentConfig.js'
 import DemoRequest from '../models/DemoRequest.js'
+import Plan from '../models/Plan.js'
+import { planCardShape } from '../config/planCatalog.js'
 import { computePricing } from '../services/pricing.js'
 import { runAssignment } from '../services/assignment.js'
 import { uploadIfDataUrl } from '../services/storage.js'
@@ -45,6 +47,12 @@ async function findAgencyByPublicSlug(slug) {
   const agencies = await Agency.find({}).select('name code logo email phone website address gstin currency bank invoiceSettings')
   return agencies.find((a) => slugify(a.name) === slugify(slug)) || null
 }
+
+/** GET /api/public/plans — public monthly plan cards, managed by Super Admin. */
+export const plans = asyncHandler(async (_req, res) => {
+  const items = await Plan.find({ key: { $in: ['Free', 'Pro'] } }).sort('price')
+  res.json({ items: items.map(planCardShape) })
+})
 
 /** GET /api/public/itinerary/:code — shareable itinerary (package by code). */
 export const itinerary = asyncHandler(async (req, res) => {

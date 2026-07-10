@@ -7,6 +7,7 @@ import * as billing from '../controllers/admin/billingController.js'
 import * as transactions from '../controllers/admin/transactionController.js'
 import * as demos from '../controllers/admin/demoController.js'
 import * as dashboard from '../controllers/admin/dashboardController.js'
+import * as support from '../controllers/admin/supportController.js'
 import { uploadAdmin } from '../controllers/uploadController.js'
 
 const router = Router()
@@ -21,6 +22,12 @@ router.get('/auth/me', auth.me)
 router.patch('/auth/profile', auth.updateProfile)
 router.post('/auth/password', auth.changePassword)
 router.post('/auth/reset-password', auth.resetPassword)
+
+// platform-owned support details and the agency inquiry inbox
+router.get('/support/settings', support.getSettings)
+router.patch('/support/settings', support.updateSettings)
+router.get('/support/inquiries', support.listInquiries)
+router.patch('/support/inquiries/:id', support.updateInquiry)
 
 router.get('/dashboard', dashboard.stats)
 router.get('/feature-catalog', plans.catalog)
