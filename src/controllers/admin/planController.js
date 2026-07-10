@@ -3,6 +3,7 @@ import { ApiError } from '../../utils/ApiError.js'
 import Plan from '../../models/Plan.js'
 import Agency from '../../models/Agency.js'
 import { defaultFeaturesForPlan, defaultLimitsForPlan, FEATURE_GROUPS, LIMIT_DEFS } from '../../config/features.js'
+import { PLAN_CATALOG } from '../../config/planCatalog.js'
 
 /** GET /api/admin/plans */
 export const list = asyncHandler(async (req, res) => {
@@ -19,13 +20,18 @@ export const catalog = asyncHandler(async (req, res) => {
 export const update = asyncHandler(async (req, res) => {
   const plan = await Plan.findOne({ key: req.params.key })
   if (!plan) throw ApiError.notFound('Plan not found')
-  const { name, price, tagline, plus, color, featured, limit } = req.body
+  const { name, price, tagline, plus, color, featured, limit, billingCycle, annualDiscountPercent } = req.body
   if (name != null) plan.name = name
   if (plan.key === 'Free') plan.price = 0
   else if (price != null) {
     const monthlyPrice = Number(price)
     if (!Number.isFinite(monthlyPrice) || monthlyPrice < 0) throw ApiError.badRequest('Monthly price must be a non-negative number')
     plan.price = monthlyPrice
+  }
+  if (billingCycle != null) plan.billingCycle = billingCycle === 'yearly' ? 'yearly' : 'monthly'
+  if (annualDiscountPercent != null) {
+    const d = Number(annualDiscountPercent)
+    plan.annualDiscountPercent = Number.isFinite(d) ? Math.min(100, Math.max(0, d)) : 0
   }
   if (tagline != null) plan.tagline = tagline
   if (plus != null) plan.plus = plus
@@ -67,6 +73,13 @@ export const resetToCatalog = asyncHandler(async (req, res) => {
   if (!plan) throw ApiError.notFound('Plan not found')
   plan.features = defaultFeaturesForPlan(plan.key)
   plan.limits = defaultLimitsForPlan(plan.key)
+  const catalog = PLAN_CATALOG.find((item) => item.key === plan.key)
+  if (catalog) {
+    plan.price = catalog.price
+    plan.billingCycle = catalog.billingCycle || 'monthly'
+    plan.annualDiscountPercent = catalog.annualDiscountPercent || 0
+    plan.tagline = catalog.tagline
+  }
   plan.markModified('features'); plan.markModified('limits')
   await plan.save()
   res.json(plan)

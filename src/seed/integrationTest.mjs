@@ -111,7 +111,7 @@ try {
   ok((await req('GET', '/api/clients', { token: login2.json.token })).json.total === 0, 'TENANT ISOLATION: second agency sees none of the first agency data')
 
   // ── billing: activate Pro ──
-  const pro = await req('POST', `/api/admin/agencies/${agencyId}/activate-pro`, { token: aTok, body: { method: 'UPI', originalPrice: 3999, amount: 3999, reference: 'TEST-1' } })
+  const pro = await req('POST', `/api/admin/agencies/${agencyId}/activate-pro`, { token: aTok, body: { method: 'UPI', originalPrice: 999, amount: 999, reference: 'TEST-1' } })
   ok(pro.status === 201 && pro.json.agency.plan === 'Pro' && pro.json.transaction.code === 'INV-0001', 'activate Pro → first invoice INV-0001')
   ok((await req('GET', '/api/admin/transactions', { token: aTok })).json.total === 1, 'transaction ledger has exactly the real payment')
 

@@ -7,8 +7,10 @@ const { Schema } = mongoose
 const planSchema = new Schema({
   key: { type: String, required: true, unique: true },   // 'Free' | 'Pro'
   name: String,
-  price: { type: Number, default: 0 },
+  price: { type: Number, default: 0 },                   // monthly rate shown to agencies
   period: String,
+  billingCycle: { type: String, default: 'monthly' },    // 'monthly' | 'yearly' — Pro bills yearly
+  annualDiscountPercent: { type: Number, default: 0 },    // discount applied to the 12-month total
   tagline: String,
   color: String,
   featured: { type: Boolean, default: false },
