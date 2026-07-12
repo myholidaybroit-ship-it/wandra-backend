@@ -50,7 +50,7 @@ async function findAgencyByPublicSlug(slug) {
 
 /* No public plans endpoint — pricing is only shown inside the CRM after onboarding. */
 
-/** GET /api/public/itinerary/:code — shareable itinerary (package by code). */
+/** GET /api/public/itinerary/:code — itinerary render used for PDF export & internal preview. */
 export const itinerary = asyncHandler(async (req, res) => {
   const pkg = await Package.findOne({ code: req.params.code }).sort('-createdAt')
   if (!pkg) throw ApiError.notFound('Itinerary not found')
