@@ -9,7 +9,7 @@ const supportInquirySchema = new Schema({
   subject: { type: String, required: true, trim: true, maxlength: 160 },
   category: {
     type: String,
-    enum: ['Technical issue', 'How-to question', 'Billing', 'Account access', 'Feature request', 'Other'],
+    enum: ['Technical issue', 'How-to question', 'Billing', 'Account access', 'Feature request', 'Roles & team', 'Other'],
     default: 'Technical issue',
   },
   message: { type: String, required: true, trim: true, maxlength: 5000 },

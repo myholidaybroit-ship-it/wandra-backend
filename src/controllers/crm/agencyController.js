@@ -25,6 +25,10 @@ export const updateProfile = asyncHandler(async (req, res) => {
       .map((s) => String(s).trim())
       .filter((s) => s && !seen.has(s.toLowerCase()) && seen.add(s.toLowerCase()))
   }
+  // the agency's own UPI QR image — store on S3 if it arrives as a data-URL
+  if (patch.paymentQr !== undefined) {
+    patch.paymentQr = await uploadIfDataUrl(patch.paymentQr, { folder: `agencies/${req.agencyId}/qr` })
+  }
   // safety net: if a raw data-URL logo slips through, push it to S3
   if (patch.logo !== undefined) {
     patch.logo = await uploadIfDataUrl(patch.logo, { folder: `agencies/${req.agencyId}/logo` })

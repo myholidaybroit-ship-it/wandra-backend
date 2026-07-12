@@ -70,15 +70,10 @@ router.use('/landing', requireFeature('landing.builder'))
 router.use('/stories', requireFeature('reviews.view'))
 router.use('/assignment', requireFeature('team.lead_assignment'))
 
-// team & roles
+// team & roles — both are read-only here: every user is a paid seat (₹999/user/month),
+// so the Wandra team adds/edits/removes users and roles from the admin panel on request
 router.get('/users', users.list)
-router.post('/users', users.create)
-router.patch('/users/:id', users.update)
-router.delete('/users/:id', users.remove)
 router.get('/roles', roles.list)
-router.post('/roles', roles.create)
-router.patch('/roles/:id/perm', roles.setPerm)
-router.delete('/roles/:id', roles.remove)
 
 // lead assignment
 router.get('/assignment', assignment.get)

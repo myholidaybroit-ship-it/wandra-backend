@@ -8,6 +8,8 @@ import * as transactions from '../controllers/admin/transactionController.js'
 import * as demos from '../controllers/admin/demoController.js'
 import * as dashboard from '../controllers/admin/dashboardController.js'
 import * as support from '../controllers/admin/supportController.js'
+import * as agencyRoles from '../controllers/admin/roleController.js'
+import * as agencyUsers from '../controllers/admin/userController.js'
 import { uploadAdmin } from '../controllers/uploadController.js'
 
 const router = Router()
@@ -44,6 +46,18 @@ router.patch('/agencies/:id/features', agencies.setFeatures)
 router.post('/agencies/:id/features/reset', agencies.resetFeatures)
 router.patch('/agencies/:id/limits', agencies.setLimit)
 router.post('/agencies/:id/password', agencies.resetPassword)
+
+// per-agency CRM roles — provisioned here, read-only inside the CRM
+router.get('/agencies/:id/roles', agencyRoles.list)
+router.post('/agencies/:id/roles', agencyRoles.create)
+router.patch('/agencies/:id/roles/:roleId', agencyRoles.update)
+router.delete('/agencies/:id/roles/:roleId', agencyRoles.remove)
+
+// per-agency CRM users — every user is a paid seat, managed here on request
+router.get('/agencies/:id/users', agencyUsers.list)
+router.post('/agencies/:id/users', agencyUsers.create)
+router.patch('/agencies/:id/users/:userId', agencyUsers.update)
+router.delete('/agencies/:id/users/:userId', agencyUsers.remove)
 
 // billing / subscriptions / renewals
 router.post('/agencies/:id/activate-pro', billing.activatePro)

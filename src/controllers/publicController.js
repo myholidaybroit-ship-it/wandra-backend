@@ -16,8 +16,6 @@ import Activity from '../models/Activity.js'
 import ServiceLocation from '../models/ServiceLocation.js'
 import AssignmentConfig from '../models/AssignmentConfig.js'
 import DemoRequest from '../models/DemoRequest.js'
-import Plan from '../models/Plan.js'
-import { planCardShape } from '../config/planCatalog.js'
 import { computePricing } from '../services/pricing.js'
 import { runAssignment } from '../services/assignment.js'
 import { uploadIfDataUrl } from '../services/storage.js'
@@ -35,6 +33,8 @@ const brand = (a) => a && ({
   name: a.name, legalName: a.legalName, logo: cleanLogo(a.logo), email: a.email, phone: a.phone,
   website: a.website, address: a.address, gstin: a.gstin, currency: a.currency, bank: a.bank,
   invoiceSettings: { ...DEFAULT_INVOICE_SETTINGS, ...(a.invoiceSettings?.toObject?.() || a.invoiceSettings || {}) },
+  docBlocks: a.docBlocks || [],   // policies & payment blocks ticked for PDF display
+  paymentQr: a.paymentQr || '',   // the agency's OWN UPI QR (never Wandra's billing details)
 })
 
 const slugify = (v) => String(v || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
@@ -48,11 +48,7 @@ async function findAgencyByPublicSlug(slug) {
   return agencies.find((a) => slugify(a.name) === slugify(slug)) || null
 }
 
-/** GET /api/public/plans — public monthly plan cards, managed by Super Admin. */
-export const plans = asyncHandler(async (_req, res) => {
-  const items = await Plan.find({ key: { $in: ['Free', 'Pro'] } }).sort('price')
-  res.json({ items: items.map(planCardShape) })
-})
+/* No public plans endpoint — pricing is only shown inside the CRM after onboarding. */
 
 /** GET /api/public/itinerary/:code — shareable itinerary (package by code). */
 export const itinerary = asyncHandler(async (req, res) => {
@@ -171,4 +167,24 @@ export const submitTrial = asyncHandler(async (req, res) => {
     note: details || 'Free trial request from website',
   })
   res.status(201).json({ ok: true, message: 'Thanks! We will contact you to activate your free trial.' })
+})
+
+/** GET /api/public/img?u=<url> — CORS-safe image proxy for client-side PDF capture.
+    Remote hosts (S3 uploads, stock photos) don't always send CORS headers, which
+    leaves blank boxes in html2canvas output; this streams the image same-origin.
+    Guarded against SSRF: http(s) only, no localhost / private-network hosts. */
+export const imageProxy = asyncHandler(async (req, res) => {
+  const raw = String(req.query.u || '')
+  let url
+  try { url = new URL(raw) } catch { throw ApiError.badRequest('Invalid image URL') }
+  if (!/^https?:$/.test(url.protocol)) throw ApiError.badRequest('Only http(s) images are allowed')
+  if (/^(localhost|127\.|0\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[)/i.test(url.hostname)) {
+    throw ApiError.badRequest('Host not allowed')
+  }
+  const upstream = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(10000) })
+  const type = upstream.headers.get('content-type') || ''
+  if (!upstream.ok || !type.startsWith('image/')) throw ApiError.badRequest('Not an image')
+  res.set('Content-Type', type)
+  res.set('Cache-Control', 'public, max-age=86400')
+  res.send(Buffer.from(await upstream.arrayBuffer()))
 })

@@ -27,6 +27,7 @@ const agencySchema = new Schema({
 
   // ── CRM brand profile (client-facing) ──
   logo: { type: String, default: '' },   // empty until the agency uploads their own — never the Wandra logo
+  paymentQr: { type: String, default: '' },   // the AGENCY's own UPI QR — printed on their quote PDFs, never Wandra's
   website: String,
   address: String,
   gstin: String,
@@ -55,6 +56,10 @@ const agencySchema = new Schema({
     type: [String],
     default: () => ['Website', 'Landing Page', 'Ad Form', 'Referral', 'WhatsApp', 'Walk-in', 'B2B Agent', 'Instagram'],
   },
+
+  // ── reusable document blocks (T&C, booking/cancellation policy, payment
+  //    details…) — editable titles, `show` ticks what prints on quote PDFs ──
+  docBlocks: { type: [Schema.Types.Mixed], default: [] },   // [{ id, title, content, show }]
 
   // ── Plan / entitlements (admin-controlled) ──
   plan: { type: String, enum: ['Free', 'Pro'], default: 'Free', index: true },
