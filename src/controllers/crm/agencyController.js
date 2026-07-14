@@ -5,11 +5,13 @@ import { CATEGORY_GROUPS } from '../../config/crmDefaults.js'
 import { ALL_FEATURES } from '../../config/features.js'
 import { uploadIfDataUrl } from '../../services/storage.js'
 import { cleanLogo } from '../../utils/brand.js'
+import { trialState } from '../../services/trial.js'
 
 /** GET /api/agency — the tenant's own brand profile + entitlements. */
 export const getProfile = asyncHandler(async (req, res) => {
   const agency = req.agency.toJSON()
   agency.logo = cleanLogo(agency.logo)   // never surface the Wandra placeholder as the agency's own logo
+  agency.trial = trialState(req.agency)  // { onTrial, expired, daysLeft, endsAt } — drives the in-app trial banner
   res.json({ agency, categoryGroups: CATEGORY_GROUPS })
 })
 

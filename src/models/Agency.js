@@ -64,6 +64,16 @@ const agencySchema = new Schema({
   // ── Plan / entitlements (admin-controlled) ──
   plan: { type: String, enum: ['Free', 'Pro'], default: 'Free', index: true },
   status: { type: String, enum: ['active', 'suspended'], default: 'active', index: true },
+  // Free-plan trial window — access is auto-cut off once `endsAt` passes
+  // (enforced at login + on every request). Null for Pro / no trial.
+  trial: {
+    type: new Schema({
+      startedAt: String,
+      endsAt: String,
+      lengthDays: { type: Number, default: 7 },
+    }, { _id: false }),
+    default: null,
+  },
   // stored as plain objects (not Maps) because feature keys contain dots
   // (e.g. "dashboard.view"), which Mongoose Maps disallow.
   features: { type: Schema.Types.Mixed, default: {} },    // per-agency feature overrides

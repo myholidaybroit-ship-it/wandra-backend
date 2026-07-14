@@ -1,9 +1,12 @@
 import { asyncHandler } from '../../utils/asyncHandler.js'
 import { ApiError } from '../../utils/ApiError.js'
 import { signToken } from '../../utils/jwt.js'
+import { trialState } from '../../services/trial.js'
 import User from '../../models/User.js'
 import Agency from '../../models/Agency.js'
 import Role from '../../models/Role.js'
+
+export const TRIAL_ENDED_MSG = 'Your free trial has ended. Please upgrade to the Pro plan or contact Wandra to extend your trial.'
 
 const sessionCookieOptions = {
   httpOnly: true,
@@ -36,6 +39,7 @@ export const login = asyncHandler(async (req, res) => {
   const agency = await Agency.findById(user.agency)
   if (!agency) throw ApiError.unauthorized('Agency not found')
   if (agency.status === 'suspended') throw ApiError.forbidden('Your agency account is suspended. Contact Wandra support.')
+  if (trialState(agency).expired) throw ApiError.forbidden(TRIAL_ENDED_MSG)
   if (user.status !== 'Active') throw ApiError.forbidden('Your account is inactive.')
   if (!(await user.checkPassword(password))) throw ApiError.unauthorized('Invalid credentials')
 

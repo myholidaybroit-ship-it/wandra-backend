@@ -1,6 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js'
 import { extractToken, verifyToken } from '../utils/jwt.js'
+import { trialState } from '../services/trial.js'
 import AdminUser from '../models/AdminUser.js'
 import User from '../models/User.js'
 import Agency from '../models/Agency.js'
@@ -30,6 +31,7 @@ export const agencyAuth = asyncHandler(async (req, res, next) => {
   ])
   if (!user || !agency) throw ApiError.unauthorized('Account not found')
   if (agency.status === 'suspended') throw ApiError.forbidden('Agency account suspended')
+  if (trialState(agency).expired) throw ApiError.forbidden('Your free trial has ended. Please upgrade to the Pro plan or contact Wandra to extend it.')
 
   req.user = user
   req.agency = agency

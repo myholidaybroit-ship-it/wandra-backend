@@ -8,6 +8,7 @@ import Client from '../../models/Client.js'
 import Package from '../../models/Package.js'
 import { planFeatureMap, planLimitMap } from '../../services/plans.js'
 import { provisionAgency } from '../../services/provisionAgency.js'
+import { newTrial, trialState, extendTrial } from '../../services/trial.js'
 
 // CRM collections wiped when an agency is deleted
 import Role from '../../models/Role.js'
@@ -35,6 +36,7 @@ async function withLiveUsage(agency) {
     User.countDocuments({ agency: agency._id }),
   ])
   j.usage = { ...j.usage, clients, packages, team: team || j.usage?.team || 1 }
+  j.trial = trialState(agency)   // live { onTrial, expired, daysLeft, endsAt } for the admin UI
   return j
 }
 
@@ -75,6 +77,8 @@ export const create = asyncHandler(async (req, res) => {
     status: data.status || 'active',
     features: await planFeatureMap(plan),
     limits: await planLimitMap(plan),
+    // Free plans start a countdown trial; Pro has none.
+    trial: plan === 'Free' ? newTrial(data.trialDays) : null,
     password,
     usage: { clients: 0, packages: 0, team: 1, storage: 0 },
   })
@@ -120,6 +124,27 @@ export const setStatus = asyncHandler(async (req, res) => {
   if (!['active', 'suspended'].includes(status)) throw ApiError.badRequest('Invalid status')
   const agency = await Agency.findByIdAndUpdate(req.params.id, { status }, { new: true })
   if (!agency) throw ApiError.notFound('Agency not found')
+  res.json(await withLiveUsage(agency))
+})
+
+/** PATCH /api/admin/agencies/:id/trial  { days } (extend/start) | { endsAt } (set exact) */
+export const setTrial = asyncHandler(async (req, res) => {
+  const agency = await Agency.findById(req.params.id)
+  if (!agency) throw ApiError.notFound('Agency not found')
+  const { days, endsAt } = req.body
+  if (endsAt) {
+    agency.trial = {
+      startedAt: agency.trial?.startedAt || new Date().toISOString(),
+      endsAt: new Date(endsAt).toISOString(),
+      lengthDays: agency.trial?.lengthDays || 7,
+    }
+  } else if (days != null && Number(days) !== 0) {
+    agency.trial = extendTrial(agency, Number(days))
+  } else {
+    throw ApiError.badRequest('Provide a number of days to extend, or an end date')
+  }
+  agency.markModified('trial')
+  await agency.save()
   res.json(await withLiveUsage(agency))
 })
 

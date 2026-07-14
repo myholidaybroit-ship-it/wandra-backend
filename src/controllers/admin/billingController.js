@@ -5,6 +5,7 @@ import { todayISO, addMonths, monthLabel, daysUntil } from '../../utils/date.js'
 import Agency from '../../models/Agency.js'
 import Transaction from '../../models/Transaction.js'
 import { planFeatureMap, planLimitMap } from '../../services/plans.js'
+import { newTrial } from '../../services/trial.js'
 import Plan from '../../models/Plan.js'
 
 async function proBillingMonths() {
@@ -37,6 +38,7 @@ export const activatePro = asyncHandler(async (req, res) => {
   agency.markModified('features'); agency.markModified('limits')
   agency.billing = { since, renewalOn }
   agency.renewal = { status: 'none' }
+  agency.trial = null   // Pro has no trial
   await agency.save()
   const tx = await record(agency, { type: 'subscription', period: billingMonths === 12 ? `${since} – ${renewalOn}` : monthLabel(since), ...req.body })
   res.status(201).json({ agency: agency.toJSON(), transaction: tx })
@@ -52,6 +54,7 @@ export const downgradeToFree = asyncHandler(async (req, res) => {
   agency.markModified('features'); agency.markModified('limits')
   agency.billing = null
   agency.renewal = { status: 'none' }
+  agency.trial = newTrial()   // back on Free → fresh trial window so they aren't instantly locked out
   await agency.save()
   res.json(agency)
 })
