@@ -258,9 +258,7 @@ export const LIMIT_DEFS = [
   { key: 'packages', label: 'Packages / quotes', unit: 'per month', free: 25, pro: -1 },
   { key: 'team', label: 'Team members', unit: 'seats', free: 1, pro: 15 },
   { key: 'storage', label: 'Cloud storage', unit: 'MB', free: 200, pro: 10240 },
-  { key: 'destinations', label: 'Destinations', unit: 'records', free: 20, pro: -1 },
-  { key: 'hotels', label: 'Hotels', unit: 'records', free: 50, pro: -1 },
-  { key: 'cabs', label: 'Cab Types', unit: 'records', free: 20, pro: -1 },
+  // Destinations, hotels & cab types are UNLIMITED on every plan — no caps, not listed here.
 ]
 
 /* Flat list of every feature key + lookup helpers */

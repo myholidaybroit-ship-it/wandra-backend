@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import { agencyAuth } from '../middleware/auth.js'
-import { requireFeature } from '../middleware/planGate.js'
+import { requireFeature, enforceLimit } from '../middleware/planGate.js'
+import Client from '../models/Client.js'
+import Package from '../models/Package.js'
 
 import * as auth from '../controllers/crm/authController.js'
 import * as agency from '../controllers/crm/agencyController.js'
@@ -82,7 +84,16 @@ router.post('/assignment/rules', assignment.addRule)
 router.patch('/assignment/rules/:ruleId', assignment.updateRule)
 router.delete('/assignment/rules/:ruleId', assignment.removeRule)
 
-// master data — a helper to mount standard CRUD
+// ── usage-limit gates (admin-controlled numeric caps per agency) ──
+// A create past the cap returns 402. -1 / unset = unlimited. Only clients &
+// packages are capped; destinations/hotels/cab types are unlimited on every plan,
+// and team seats are provisioned by the Wandra team (never blocked here).
+const startOfMonth = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) }
+const countBy = (Model, extra = () => ({})) => (req) => Model.countDocuments({ agency: req.agencyId, ...extra(req) })
+const limitClients = enforceLimit('clients', countBy(Client))
+const limitPackages = enforceLimit('packages', countBy(Package, () => ({ createdAt: { $gte: startOfMonth() } })))
+
+// master data — a helper to mount standard CRUD (destinations/hotels/cabs are uncapped)
 const mountCrud = (base, c, { del = true } = {}) => {
   router.get(base, c.list)
   router.post(base, c.create)
@@ -106,7 +117,7 @@ router.delete('/inclusions', inclusions.remove)
 
 // clients / leads
 router.get('/clients', clients.list)
-router.post('/clients', clients.create)
+router.post('/clients', limitClients, clients.create)
 router.get('/clients/:id', clients.getOne)
 router.patch('/clients/:id', clients.update)
 router.delete('/clients/:id', clients.remove)
@@ -115,9 +126,9 @@ router.delete('/clients/:id/docs/:docId', clients.removeDoc)
 
 // packages / quotes
 router.get('/packages', packages.list)
-router.post('/packages', packages.create)
+router.post('/packages', limitPackages, packages.create)
 router.post('/packages/price', packages.price)
-router.post('/packages/from-template', packages.fromTemplate)
+router.post('/packages/from-template', limitPackages, packages.fromTemplate)
 router.get('/packages/:id', packages.getOne)
 router.patch('/packages/:id', packages.update)
 router.delete('/packages/:id', packages.remove)
@@ -129,6 +140,7 @@ router.get('/bookings', bookings.list)
 router.post('/bookings/from-package', bookings.fromPackage)
 router.get('/bookings/:id', bookings.getOne)
 router.post('/bookings/:id/cancel', bookings.cancel)
+router.delete('/bookings/:id', bookings.remove)
 router.post('/bookings/:id/payments', bookings.addPayment)
 router.patch('/bookings/:id/status', bookings.setStatus)
 
@@ -143,6 +155,7 @@ router.post('/invoices/:id/payments', invoices.addPayment)
 // quotations
 router.get('/quotations', quotations.list)
 router.patch('/quotations/:id/status', quotations.setStatus)
+router.delete('/quotations/:id', quotations.remove)
 
 // vouchers
 router.get('/vouchers', vouchers.list)

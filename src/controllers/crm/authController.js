@@ -30,7 +30,7 @@ async function sessionPayload(user, agency) {
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) throw ApiError.badRequest('Email and password are required')
-  const user = await User.findOne({ email: String(email).toLowerCase() }).select('+passwordHash')
+  const user = await User.findOne({ email: String(email).trim().toLowerCase() }).select('+passwordHash')
   if (!user) throw ApiError.unauthorized('Invalid credentials')
 
   const agency = await Agency.findById(user.agency)

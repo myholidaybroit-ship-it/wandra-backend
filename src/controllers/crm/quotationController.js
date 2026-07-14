@@ -18,3 +18,10 @@ export const setStatus = asyncHandler(async (req, res) => {
   if (!quote) throw ApiError.notFound('Quotation not found')
   res.json(quote)
 })
+
+/** DELETE /api/quotations/:id */
+export const remove = asyncHandler(async (req, res) => {
+  const quote = await Quotation.findOneAndDelete({ _id: req.params.id, agency: req.agencyId })
+  if (!quote) throw ApiError.notFound('Quotation not found')
+  res.json({ ok: true, id: req.params.id })
+})

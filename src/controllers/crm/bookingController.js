@@ -86,6 +86,25 @@ export const cancel = asyncHandler(async (req, res) => {
   res.json(booking)
 })
 
+/** DELETE /api/bookings/:id — remove a booking and its auto-generated invoice,
+ *  and roll the package/quotation back to a quoted state (mirrors cancel). */
+export const remove = asyncHandler(async (req, res) => {
+  const booking = await Booking.findOne({ _id: req.params.id, agency: req.agencyId })
+  if (!booking) throw ApiError.notFound('Booking not found')
+  if (booking.invoice) await Invoice.deleteOne({ _id: booking.invoice, agency: req.agencyId })
+  if (booking.package) {
+    const pkg = await Package.findOne({ _id: booking.package, agency: req.agencyId })
+    if (pkg) {
+      pkg.status = 'Quoted'
+      pkg.logs.unshift({ text: `Booking ${booking.code} deleted`, at: today() })
+      await pkg.save()
+      await Quotation.updateOne({ agency: req.agencyId, package: pkg._id }, { $set: { status: 'Sent' } })
+    }
+  }
+  await Booking.deleteOne({ _id: booking._id, agency: req.agencyId })
+  res.json({ ok: true, id: req.params.id })
+})
+
 /** POST /api/bookings/:id/payments  { date, method, reference, amount } */
 export const addPayment = asyncHandler(async (req, res) => {
   const booking = await Booking.findOne({ _id: req.params.id, agency: req.agencyId })
